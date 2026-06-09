@@ -2,27 +2,27 @@
 
 ## Objective
 
-The purpose of this analysis is to examine prediction errors made by the final churn prediction model and understand their potential business impact.
+The purpose of this analysis is to evaluate prediction errors made by the final churn prediction model and assess their potential business impact.
 
-While overall performance metrics provide a summary of model effectiveness, error analysis helps identify situations where the model may fail and highlights opportunities for future improvement.
+While aggregate performance metrics provide an overall measure of model effectiveness, error analysis helps identify situations where the model may struggle and highlights opportunities for future improvement.
 
-The final model selected for deployment was a Logistic Regression classifier with a decision threshold of 0.35.
+The final model selected for deployment was a Logistic Regression classifier using a decision threshold of **0.35**, chosen to prioritize churn detection and minimize missed retention opportunities.
 
 ---
 
 # Error Types Evaluated
 
-Two error categories were analyzed:
+Two categories of prediction errors were examined:
 
 ### False Positives
 
-Customers predicted to churn who actually remained active.
+Customers predicted to churn who ultimately remained active.
 
 ### False Negatives
 
-Customers predicted to remain active who actually churned.
+Customers predicted to remain active but ultimately churned.
 
-From a business perspective, False Negatives are generally more costly because they represent missed opportunities to retain customers before churn occurs.
+From a business perspective, False Negatives are generally more costly because they represent missed opportunities to intervene before customer loss occurs.
 
 ---
 
@@ -47,6 +47,17 @@ From a business perspective, False Negatives are generally more costly because t
 
 The model successfully identified the majority of future churners while maintaining a practical balance between precision and recall.
 
+### Error Distribution Summary
+
+The final model produced:
+
+* True Positives: 146
+* True Negatives: 121
+* False Positives: 47
+* False Negatives: 22
+
+The relatively low number of False Negatives is particularly important because missed churners represent direct revenue loss. The selected threshold of 0.35 intentionally prioritizes Recall, resulting in fewer missed churners at the cost of additional False Positives.
+
 ---
 
 # False Positive Analysis
@@ -55,7 +66,7 @@ The model successfully identified the majority of future churners while maintain
 
 False Positives are customers who were predicted to churn but ultimately remained active.
 
-Although these customers were incorrectly classified, the business consequence is generally limited to unnecessary retention actions such as marketing offers, discount campaigns, or customer outreach.
+Although these customers were incorrectly classified, the business consequence is generally limited to unnecessary retention actions such as promotional offers, discount campaigns, or customer outreach efforts.
 
 ---
 
@@ -73,24 +84,22 @@ Although these customers were incorrectly classified, the business consequence i
 
 ## Observations
 
-Several false positive customers exhibited characteristics commonly associated with churn:
+Several False Positive customers exhibited characteristics commonly associated with churn:
 
 * High recency values.
 * Low purchase frequency.
 * Limited recent engagement.
 * Reduced interaction with marketing campaigns.
 
-For example:
-
 ### CUST00165
 
-This customer had a recency value of 103 days and only two sessions in the previous 30 days. These characteristics strongly resemble customers who eventually churn, making the prediction reasonable despite the customer remaining active.
+This customer had a recency value of 103 days and only two sessions during the previous 30 days. These characteristics closely resemble those of customers who eventually churn, making the prediction understandable despite the customer remaining active.
 
 ### CUST00100
 
-This customer showed low spending activity, low frequency, and minimal engagement, all of which are historically associated with churn behavior.
+This customer demonstrated low spending, low purchase frequency, and minimal engagement activity. These patterns are historically associated with elevated churn risk and therefore contributed to the model's prediction.
 
-These examples suggest that many false positives are borderline cases rather than completely incorrect predictions.
+These examples indicate that the model is often making reasonable predictions based on observable churn signals. In several cases, the customers displayed inactivity and engagement patterns that closely resembled those of actual churners. From an operational perspective, these customers would still be valid candidates for low-cost retention interventions.
 
 ---
 
@@ -101,6 +110,7 @@ Potential consequences include:
 * Unnecessary promotional discounts.
 * Additional marketing communication costs.
 * Reduced campaign efficiency.
+* Lower retention campaign return on investment.
 
 However, these customers remain active, meaning no direct customer loss occurs.
 
@@ -108,7 +118,7 @@ However, these customers remain active, meaning no direct customer loss occurs.
 
 **Moderate**
 
-False positives increase retention spending but do not result in lost revenue.
+False Positives increase retention spending but generally do not result in lost revenue.
 
 ---
 
@@ -136,29 +146,32 @@ This represents the most costly error type because no retention intervention wou
 
 ## Observations
 
-False negative customers often displayed behaviors typically associated with loyal customers.
+False Negative customers often displayed behaviors typically associated with retained customers.
 
 ### CUST00188
 
-This customer had:
+This customer demonstrated:
 
-* High purchase frequency
-* High spending
-* Recent activity
-* Strong engagement
+* High purchase frequency.
+* High monetary value.
+* Recent purchase activity.
+* Strong engagement behavior.
 
 Despite these positive indicators, the customer ultimately churned.
 
 ### CUST00157
 
-This customer showed zero recency and multiple purchases, which strongly suggested retention rather than churn.
+This customer showed very recent purchasing activity, multiple purchases, and moderate engagement levels, all of which reduced the predicted churn probability.
 
-These examples indicate that some churn decisions may be driven by factors not captured in the available dataset, such as:
+These cases highlight an important limitation of behavioral churn modeling. Some customers who appear highly engaged and valuable may still churn due to factors outside the available data. This suggests that customer churn is influenced by both observable behavioral signals and external factors that are not captured in the current feature set.
 
-* Competitor activity
-* Product dissatisfaction
-* Personal preference changes
-* External economic factors
+Potential examples include:
+
+* Competitor activity.
+* Product dissatisfaction.
+* Personal preference changes.
+* Pricing sensitivity.
+* External economic conditions.
 
 ---
 
@@ -169,15 +182,16 @@ Potential consequences include:
 * Lost customer lifetime value.
 * Reduced repeat purchases.
 * Missed retention opportunities.
-* Lower effectiveness of retention campaigns.
+* Lower effectiveness of retention programs.
+* Direct revenue loss.
 
-Unlike false positives, these customers are lost without intervention.
+Unlike False Positives, these customers are lost without intervention.
 
 ### Risk Level
 
 **High**
 
-False negatives directly impact revenue and customer retention performance.
+False Negatives directly impact revenue and customer retention performance.
 
 ---
 
@@ -195,7 +209,7 @@ False negatives directly impact revenue and customer retention performance.
 * Recent purchase activity.
 * Higher spending behavior.
 * Moderate to high engagement.
-* Behavior resembling retained customers.
+* Behavioral patterns resembling retained customers.
 
 These findings suggest that the model captures most observable churn signals but may struggle with churn caused by external factors not represented in the available features.
 
@@ -203,7 +217,7 @@ These findings suggest that the model captures most observable churn signals but
 
 # Recommendations
 
-Based on the error analysis, several improvements could further enhance model performance:
+Based on the error analysis, several opportunities exist to further improve model performance.
 
 ### 1. Incorporate Additional Behavioral Signals
 
@@ -213,18 +227,27 @@ Potential features include:
 * Subscription interactions.
 * Customer feedback patterns.
 * Loyalty program redemption behavior.
+* Customer service escalation history.
+
+Additional behavioral signals may help distinguish genuinely loyal customers from customers who appear engaged but are at risk of leaving.
 
 ### 2. Monitor False Negative Rates
 
-Because false negatives represent lost customers, monitoring recall should remain a priority after deployment.
+Because False Negatives represent missed retention opportunities, Recall should remain a primary monitoring metric after deployment.
+
+Regular review of missed churners can help identify emerging churn patterns not currently captured by the model.
 
 ### 3. Periodic Model Retraining
 
-Customer behavior evolves over time. Regular retraining will help maintain predictive performance.
+Customer preferences, marketing strategies, and purchasing behavior evolve over time.
+
+The model should be retrained on a quarterly basis and monitored for performance degradation, particularly in Recall and ROC-AUC, to ensure continued effectiveness.
 
 ### 4. Retention Campaign Optimization
 
-Retention teams should focus on customers with elevated churn probabilities while continuously evaluating campaign effectiveness.
+Retention teams should prioritize customers with elevated churn probabilities while continuously evaluating campaign effectiveness and intervention costs.
+
+The selected threshold can also be adjusted over time based on changing business objectives and retention budgets.
 
 ---
 
@@ -232,6 +255,8 @@ Retention teams should focus on customers with elevated churn probabilities whil
 
 The final churn prediction model demonstrates strong overall performance and successfully identifies the majority of future churners.
 
-False positive errors primarily result in additional retention costs, while false negative errors represent missed opportunities to prevent customer loss.
+False Positive errors primarily result in additional retention costs, while False Negative errors represent missed opportunities to prevent customer loss and therefore carry greater business risk.
 
-The analysis suggests that most prediction errors occur in borderline customer segments whose behavior closely resembles the opposite class. Despite these challenges, the model provides meaningful business value and can support proactive customer retention initiatives when combined with appropriate operational processes and periodic performance monitoring.
+The analysis suggests that most prediction errors occur within borderline customer segments whose behavior closely resembles the opposite class. Despite these challenges, the model provides meaningful business value and offers a practical framework for supporting proactive customer retention initiatives.
+
+When combined with ongoing monitoring, periodic retraining, and business oversight, the model can serve as an effective decision-support tool for customer retention programs.

@@ -1,6 +1,28 @@
 # D2C Customer Churn Prediction & Model Card
 
-## Overview
+## Executive Summary
+
+**Final Model:** Logistic Regression
+
+**Selected Threshold:** 0.35
+
+### Final Test Performance
+
+| Metric    | Value  |
+| --------- | ------ |
+| Accuracy  | 79.46% |
+| Precision | 75.65% |
+| Recall    | 86.90% |
+| F1 Score  | 80.89% |
+| ROC-AUC   | 87.11% |
+
+The final model successfully identified **146 out of 168 future churners** in the unseen test dataset while maintaining strong overall predictive performance.
+
+The solution is designed to support proactive retention initiatives by identifying customers most likely to churn within the next 60 days.
+
+---
+
+# Overview
 
 This project develops a machine learning solution to predict whether a customer is likely to churn within the next 60 days.
 
@@ -40,14 +62,21 @@ The project uses the provided customer churn dataset consisting of:
 * Digital engagement activity
 * Marketing engagement activity
 
-Target Variable:
+### Target Variable
 
-```text
-churn_next_60d
-```
+`churn_next_60d`
 
 * 1 = Customer churned within the next 60 days
 * 0 = Customer remained active
+
+### Target Distribution
+
+| Class        | Percentage |
+| ------------ | ---------- |
+| Retained (0) | 53.04%     |
+| Churned (1)  | 46.96%     |
+
+The target distribution is relatively balanced, allowing evaluation to focus on business-relevant metrics such as Precision, Recall, F1-Score, and ROC-AUC.
 
 ---
 
@@ -73,8 +102,6 @@ Removed fields:
 The modeling process only uses information available at or before the customer snapshot date.
 
 ## 3. Feature Preparation
-
-Feature groups:
 
 ### Customer Profile
 
@@ -144,7 +171,11 @@ The final model was selected using validation performance.
 | Gradient Boosting   | 0.7976   | 0.7842    | 0.7415 | 0.7622   | 0.8643  |
 | LightGBM            | 0.7827   | 0.7434    | 0.7687 | 0.7559   | 0.8497  |
 
-Logistic Regression achieved the strongest overall validation performance and was selected as the final model.
+Although several ensemble-based algorithms were evaluated, Logistic Regression achieved the highest validation ROC-AUC while maintaining strong interpretability.
+
+The model also demonstrated excellent generalization performance, with validation ROC-AUC (0.8753) and test ROC-AUC (0.8711) remaining highly consistent.
+
+This suggests that churn behavior within the available feature space is largely explained by stable linear relationships rather than highly complex non-linear interactions.
 
 ---
 
@@ -152,19 +183,17 @@ Logistic Regression achieved the strongest overall validation performance and wa
 
 Multiple probability thresholds were evaluated.
 
-The final threshold selected was:
+### Selected Threshold
 
 ```text
 0.35
 ```
 
-Reason:
+A threshold of 0.35 achieved the highest F1-Score while substantially improving Recall compared to the default threshold of 0.50.
 
-* Highest F1 Score
-* Strong Recall
-* Better alignment with retention objectives
+The selected threshold intentionally prioritizes Recall because the cost of missing a future churner is typically greater than the cost of contacting a customer who ultimately remains active.
 
-The business cost of missing a churner is higher than unnecessarily targeting a retained customer.
+This threshold reduced false negatives and increased the number of at-risk customers identified for retention campaigns.
 
 ---
 
@@ -189,18 +218,28 @@ The model successfully identifies the majority of future churners while maintain
 
 ---
 
+# Project Deliverables
+
+The repository contains all required submission artifacts:
+
+* churn_model.ipynb
+* model.pkl
+* metrics.json
+* error_analysis.md
+* model_card.md
+* requirements.txt
+* README.md
+
+The `metrics.json` file stores the final model evaluation metrics and selected decision threshold used during testing.
+
+---
+
 # Repository Structure
 
 ```text
 part3-churn-prediction-model-card/
 │
 ├── data/
-│   ├── customers.csv
-│   ├── orders.csv
-│   ├── support_tickets.csv
-│   ├── intervention_history.csv
-│   ├── web_events_snapshot.csv
-│   ├── churn_labels.csv
 │   └── rfm_modeling_snapshot.csv
 │
 ├── outputs/
@@ -218,6 +257,7 @@ part3-churn-prediction-model-card/
 ├── error_analysis.md
 ├── model_card.md
 ├── requirements.txt
+├── .gitignore
 └── README.md
 ```
 
@@ -232,13 +272,13 @@ git clone https://github.com/Deepika825325/part3-churn-prediction-model-card.git
 cd part3-churn-prediction-model-card
 ```
 
-Create virtual environment:
+Create a virtual environment:
 
 ```bash
 python -m venv venv
 ```
 
-Activate environment:
+Activate the environment:
 
 ### Windows
 
@@ -246,7 +286,7 @@ Activate environment:
 venv\Scripts\activate
 ```
 
-### Linux / Mac
+### Linux / macOS
 
 ```bash
 source venv/bin/activate
@@ -295,7 +335,7 @@ predictions = model.predict(X)
 Generate churn probabilities:
 
 ```python
-probabilities = model.predict_proba(X)[:,1]
+probabilities = model.predict_proba(X)[:, 1]
 ```
 
 ---
@@ -308,7 +348,7 @@ The project generates:
 * ROC Curve
 * Precision-Recall Curve
 * Confusion Matrix
-* Feature Importance Plot
+* Feature Importance Analysis
 * Error Analysis Examples
 * Trained Model Artifact
 
@@ -316,9 +356,9 @@ The project generates:
 
 # Troubleshooting
 
-## ModuleNotFoundError
+## Missing Package Errors
 
-Error:
+Example:
 
 ```text
 ModuleNotFoundError: No module named 'xgboost'
@@ -332,25 +372,9 @@ pip install -r requirements.txt
 
 ---
 
-## LightGBM Import Error
-
-Error:
-
-```text
-No module named 'lightgbm'
-```
-
-Solution:
-
-```bash
-pip install lightgbm
-```
-
----
-
 ## Model Loading Error
 
-Error:
+Example:
 
 ```text
 FileNotFoundError: model.pkl
@@ -358,49 +382,46 @@ FileNotFoundError: model.pkl
 
 Solution:
 
-* Ensure model.pkl exists in the repository root.
+* Ensure `model.pkl` exists in the repository root.
 * Run the notebook completely before loading the model.
 
 ---
 
-## Notebook Variables Not Found
+## Notebook Execution Issues
 
-Error:
-
-```text
-NameError: y_val is not defined
-```
-
-Solution:
+If variables appear undefined or outputs are missing:
 
 * Restart the notebook kernel.
-* Run all cells from top to bottom.
+* Run all notebook cells sequentially from top to bottom.
 
 ---
 
 # Key Business Insights
 
-The strongest churn indicators were:
+### Strongest Churn Indicators
 
 * High recency
 * Long gaps since website visits
 * Higher return rates
 * Lower loyalty engagement
 
-The strongest retention indicators were:
+### Strongest Retention Indicators
 
 * Higher purchase frequency
 * Higher spending behavior
 * Increased website engagement
 * Active loyalty program participation
 
+These insights can help retention teams design more targeted and cost-effective customer engagement strategies.
+
 ---
 
 # Author
 
-Deepika Kumari
+**Deepika Kumari**
+
 Academic Project Submission
 
-Part 3: Churn Prediction Model & Model Card
+**Part 3: Churn Prediction Model & Model Card**
 
 D2C Customer Churn Intelligence Project

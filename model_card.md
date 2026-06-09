@@ -70,6 +70,19 @@ The model was trained using a customer-level modeling dataset containing informa
 * Digital Engagement Data
 * Marketing Interaction Data
 
+### Required Model Inputs
+
+The model expects customer-level features generated at the snapshot date, including:
+
+* Customer profile attributes
+* Transactional metrics
+* Purchase behavior indicators
+* Customer support interactions
+* Marketing engagement signals
+* Website engagement metrics
+
+All inputs must be generated using information available on or before the snapshot date to prevent target leakage.
+
 ### Example Features
 
 #### Customer Profile
@@ -113,6 +126,17 @@ The model was trained using a customer-level modeling dataset containing informa
 
 * 1 = Customer churned within the next 60 days.
 * 0 = Customer remained active.
+
+### Target Distribution
+
+The modeling dataset exhibits a relatively balanced target distribution.
+
+| Class        | Percentage |
+| ------------ | ---------- |
+| Retained (0) | 53.04%     |
+| Churned (1)  | 46.96%     |
+
+Because the classes are reasonably balanced, model evaluation focused on Precision, Recall, F1-Score, and ROC-AUC rather than Accuracy alone.
 
 ---
 
@@ -165,7 +189,11 @@ The following candidate models were evaluated:
 | Gradient Boosting   | 0.7976   | 0.7842    | 0.7415 | 0.7622   | 0.8643  |
 | LightGBM            | 0.7827   | 0.7434    | 0.7687 | 0.7559   | 0.8497  |
 
-Logistic Regression achieved the strongest overall validation performance and was selected as the final model.
+Although several ensemble-based algorithms were evaluated, Logistic Regression achieved the highest validation ROC-AUC while maintaining strong interpretability.
+
+The model also demonstrated excellent generalization performance, with validation ROC-AUC (0.8753) and test ROC-AUC (0.8711) remaining highly consistent.
+
+This suggests that churn behavior within the available feature space is largely explained by stable linear relationships rather than highly complex non-linear interactions, making Logistic Regression both an effective and business-friendly choice for deployment.
 
 ---
 
@@ -173,9 +201,13 @@ Logistic Regression achieved the strongest overall validation performance and wa
 
 ### Selected Threshold
 
-0.35
+**0.35**
 
-The threshold was chosen because it provided the best balance between Precision and Recall while maximizing F1-Score.
+The threshold was selected using validation-set threshold analysis.
+
+A threshold of 0.35 achieved the highest F1-Score while substantially improving Recall compared to the default threshold of 0.50.
+
+Because the primary business objective is churn prevention, Recall was prioritized to minimize missed retention opportunities.
 
 ### Test Set Performance
 
@@ -228,13 +260,9 @@ These insights can inform future retention strategies.
 The model has several limitations:
 
 1. Predictions are based on historical customer behavior and may not fully capture future market changes.
-
 2. Customer motivations for churn may not always be observable through transactional and engagement data.
-
 3. External factors such as competitor activity, pricing changes, or economic conditions are not represented.
-
 4. Model performance may degrade over time as customer behavior evolves.
-
 5. The model provides risk estimates and should not be interpreted as certainty.
 
 ---
@@ -260,7 +288,7 @@ The model should support business decisions rather than replace human judgment.
 
 # Monitoring Requirements
 
-The following metrics should be monitored after deployment:
+The following metrics should be monitored after deployment.
 
 ### Data Quality Monitoring
 
@@ -276,13 +304,16 @@ The following metrics should be monitored after deployment:
 * F1 Score
 * ROC-AUC
 
-### Business Monitoring
+### Recommended Retraining Strategy
 
-* Retention campaign response rate
-* Churn reduction rate
-* Customer lifetime value impact
+The model should be retrained:
 
-Model retraining should be considered if performance deteriorates significantly.
+* Quarterly as part of routine model maintenance.
+* Earlier if ROC-AUC decreases by more than 5%.
+* When significant feature distribution drift is detected.
+* After major business or customer-behavior changes.
+
+Regular retraining helps maintain prediction quality as customer behavior evolves over time.
 
 ---
 
@@ -303,4 +334,8 @@ The model should not be used:
 
 The Customer Churn Prediction Model provides a practical and interpretable approach for identifying customers at risk of churn within the next 60 days.
 
-The final Logistic Regression model achieved strong predictive performance on unseen test data, particularly in terms of churn detection capability. The model can support proactive retention initiatives and help improve customer lifetime value when used alongside appropriate business processes and human oversight.
+The final Logistic Regression model achieved strong predictive performance on unseen test data, particularly in terms of churn detection capability.
+
+With a Recall of 86.90% and ROC-AUC of 87.11%, the model successfully identifies the majority of future churners while maintaining a practical balance between precision and recall.
+
+The model can support proactive retention initiatives and help improve customer lifetime value when used alongside appropriate business processes, human oversight, and ongoing performance monitoring.
