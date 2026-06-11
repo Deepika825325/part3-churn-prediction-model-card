@@ -1,243 +1,69 @@
-# D2C Customer Churn Prediction & Model Card
+# D2C Customer Churn Prediction Model & Model Card
 
-## Executive Summary
+## Project Overview
 
-**Final Model:** Logistic Regression
+This project develops a machine learning system to predict whether a customer is likely to churn within the next 60 days.
 
-**Selected Threshold:** 0.35
+The objective is to help a Direct-to-Consumer (D2C) personal-care brand proactively identify at-risk customers and support targeted retention strategies instead of applying blanket retention campaigns.
 
-### Final Test Performance
-
-| Metric    | Value  |
-| --------- | ------ |
-| Accuracy  | 79.46% |
-| Precision | 75.65% |
-| Recall    | 86.90% |
-| F1 Score  | 80.89% |
-| ROC-AUC   | 87.11% |
-
-The final model successfully identified **146 out of 168 future churners** in the unseen test dataset while maintaining strong overall predictive performance.
-
-The solution is designed to support proactive retention initiatives by identifying customers most likely to churn within the next 60 days.
+This repository corresponds to **Part 3: Churn Prediction Model & Model Card** of the D2C Customer Churn Intelligence & Retention API Capstone Project.
 
 ---
 
-# Overview
+## Business Objective
 
-This project develops a machine learning solution to predict whether a customer is likely to churn within the next 60 days.
+Customer churn directly impacts revenue and customer lifetime value.
 
-The objective is to help customer retention teams proactively identify at-risk customers and prioritize retention interventions before churn occurs.
+The goal of this project is to:
 
-The solution includes:
-
-* End-to-end churn modeling workflow
-* Leakage prevention checks
-* Baseline and advanced model comparison
-* Threshold optimization
-* Feature importance analysis
-* Error analysis
-* Model documentation through a structured model card
+* Predict customers likely to churn in the next 60 days.
+* Identify key drivers of churn.
+* Support retention campaign prioritization.
+* Provide interpretable predictions for business stakeholders.
 
 ---
 
-# Business Problem
+## Dataset
 
-Customer acquisition is significantly more expensive than customer retention.
+The dataset contains customer-level historical information available before the snapshot date.
 
-The business requires a predictive model that can identify customers likely to churn within the next 60 days so that marketing and retention teams can intervene before customer loss occurs.
+### Data Sources
 
-This project evaluates multiple machine learning approaches and selects the best-performing model based on business-oriented churn metrics.
-
----
-
-# Dataset
-
-The project uses the provided customer churn dataset consisting of:
-
-* Customer profile information
-* Transaction history
-* RFM metrics
-* Purchase behavior
-* Support interactions
-* Digital engagement activity
-* Marketing engagement activity
+* Customer Profile Data
+* Order History
+* Support Ticket History
+* Web/App Activity
+* Campaign Engagement Data
+* Churn Labels
+* Modeling Snapshot
 
 ### Target Variable
 
-`churn_next_60d`
+| Column         | Description                                                 |
+| -------------- | ----------------------------------------------------------- |
+| churn_next_60d | Indicates whether a customer churns within the next 60 days |
 
-* 1 = Customer churned within the next 60 days
-* 0 = Customer remained active
-
-### Target Distribution
-
-| Class        | Percentage |
-| ------------ | ---------- |
-| Retained (0) | 53.04%     |
-| Churned (1)  | 46.96%     |
-
-The target distribution is relatively balanced, allowing evaluation to focus on business-relevant metrics such as Precision, Recall, F1-Score, and ROC-AUC.
+* 1 = Churn
+* 0 = Non-Churn
 
 ---
 
-# Project Workflow
+## Leakage Prevention
 
-## 1. Data Audit
+To prevent target leakage:
 
-* Dataset inspection
-* Missing value analysis
-* Duplicate checks
-* Target distribution analysis
-
-## 2. Leakage Prevention
-
-Features containing future information were excluded.
-
-Removed fields:
-
-* customer_id
-* signup_date
-* snapshot_date
-
-The modeling process only uses information available at or before the customer snapshot date.
-
-## 3. Feature Preparation
-
-### Customer Profile
-
-* city_tier
-* age_group
-* acquisition_channel
-* loyalty_tier
-* preferred_category
-* skin_type
-* marketing_consent
-
-### Transactional Features
-
-* recency
-* frequency
-* monetary
-
-### Purchase Behavior
-
-* return_rate
-* avg_discount
-* category_diversity
-
-### Support Features
-
-* ticket_count
-* avg_sentiment
-* avg_resolution_hours
-
-### Engagement Features
-
-* sessions_30d
-* campaign_clicks_30d
-* email_opens_30d
-* last_visit_days_ago
+* Customer ID was excluded from modeling.
+* Snapshot Date was excluded from modeling.
+* Split information was excluded from modeling.
+* Only features available before the snapshot date were used.
+* Preprocessing was fitted only on the training dataset.
 
 ---
 
-# Models Evaluated
-
-## Baseline Models
-
-* Logistic Regression
-* Decision Tree
-
-## Advanced Models
-
-* Random Forest
-* XGBoost
-* Gradient Boosting
-* LightGBM
-
----
-
-# Model Selection
-
-The final model was selected using validation performance.
-
-### Validation Results
-
-| Model               | Accuracy | Precision | Recall | F1 Score | ROC-AUC |
-| ------------------- | -------- | --------- | ------ | -------- | ------- |
-| Logistic Regression | 0.8036   | 0.7914    | 0.7483 | 0.7692   | 0.8753  |
-| Decision Tree       | 0.7619   | 0.7081    | 0.7755 | 0.7403   | 0.8372  |
-| Random Forest       | 0.7857   | 0.7863    | 0.7007 | 0.7410   | 0.8677  |
-| XGBoost             | 0.7649   | 0.7267    | 0.7415 | 0.7340   | 0.8496  |
-| Gradient Boosting   | 0.7976   | 0.7842    | 0.7415 | 0.7622   | 0.8643  |
-| LightGBM            | 0.7827   | 0.7434    | 0.7687 | 0.7559   | 0.8497  |
-
-Although several ensemble-based algorithms were evaluated, Logistic Regression achieved the highest validation ROC-AUC while maintaining strong interpretability.
-
-The model also demonstrated excellent generalization performance, with validation ROC-AUC (0.8753) and test ROC-AUC (0.8711) remaining highly consistent.
-
-This suggests that churn behavior within the available feature space is largely explained by stable linear relationships rather than highly complex non-linear interactions.
-
----
-
-# Threshold Optimization
-
-Multiple probability thresholds were evaluated.
-
-### Selected Threshold
+## Repository Structure
 
 ```text
-0.35
-```
-
-A threshold of 0.35 achieved the highest F1-Score while substantially improving Recall compared to the default threshold of 0.50.
-
-The selected threshold intentionally prioritizes Recall because the cost of missing a future churner is typically greater than the cost of contacting a customer who ultimately remains active.
-
-This threshold reduced false negatives and increased the number of at-risk customers identified for retention campaigns.
-
----
-
-# Final Test Performance
-
-| Metric    | Value  |
-| --------- | ------ |
-| Accuracy  | 79.46% |
-| Precision | 75.65% |
-| Recall    | 86.90% |
-| F1 Score  | 80.89% |
-| ROC-AUC   | 87.11% |
-
-### Test Confusion Matrix
-
-|              | Predicted Stay | Predicted Churn |
-| ------------ | -------------- | --------------- |
-| Actual Stay  | 121            | 47              |
-| Actual Churn | 22             | 146             |
-
-The model successfully identifies the majority of future churners while maintaining strong overall predictive performance.
-
----
-
-# Project Deliverables
-
-The repository contains all required submission artifacts:
-
-* churn_model.ipynb
-* model.pkl
-* metrics.json
-* error_analysis.md
-* model_card.md
-* requirements.txt
-* README.md
-
-The `metrics.json` file stores the final model evaluation metrics and selected decision threshold used during testing.
-
----
-
-# Repository Structure
-
-```text
-part3-churn-prediction-model-card/
+D2C-Customer-Churn-Prediction/
 │
 ├── data/
 │   └── rfm_modeling_snapshot.csv
@@ -245,11 +71,13 @@ part3-churn-prediction-model-card/
 ├── outputs/
 │   ├── roc_curve.png
 │   ├── pr_curve.png
-│   ├── confusion_matrix.png
-│   ├── final_test_confusion_matrix.png
+│   ├── threshold_optimization.png
+│   ├── model_comparison.csv
+│   ├── model_comparison_f1.png
 │   ├── feature_importance.png
-│   ├── false_positive_examples.csv
-│   └── false_negative_examples.csv
+│   ├── shap_summary.png
+│   ├── false_positives.csv
+│   └── false_negatives.csv
 │
 ├── churn_model.ipynb
 ├── model.pkl
@@ -257,171 +85,165 @@ part3-churn-prediction-model-card/
 ├── error_analysis.md
 ├── model_card.md
 ├── requirements.txt
-├── .gitignore
 └── README.md
 ```
 
 ---
 
-# Installation
+## Modeling Workflow
 
-Clone the repository:
+The project follows the following workflow:
+
+1. Data Loading
+2. Dataset Overview
+3. Leakage Prevention
+4. Data Preparation
+5. Feature Engineering
+6. Target Analysis
+7. Train / Validation / Test Split
+8. Preprocessing Pipeline
+9. Baseline Model (Logistic Regression)
+10. Advanced Models
+
+    * Random Forest
+    * Gradient Boosting
+    * XGBoost
+11. Hyperparameter Tuning
+12. Model Comparison
+13. ROC Curve Analysis
+14. Precision-Recall Curve Analysis
+15. Threshold Optimization
+16. Feature Importance Analysis
+17. SHAP Explainability
+18. Error Analysis
+19. Business Recommendations
+20. Model Export
+
+---
+
+## Models Evaluated
+
+| Model               | Type              |
+| ------------------- | ----------------- |
+| Logistic Regression | Baseline          |
+| Random Forest       | Ensemble          |
+| Gradient Boosting   | Ensemble          |
+| XGBoost             | Gradient Boosting |
+
+---
+
+## Final Model Selection
+
+The final selected model is:
+
+### Logistic Regression
+
+Selected because it achieved the best overall validation performance across Accuracy, F1-Score, ROC-AUC, and PR-AUC while maintaining strong interpretability.
+
+### Selected Threshold
+
+```text
+0.45
+```
+
+The threshold was optimized to balance Precision and Recall for retention campaign effectiveness.
+
+---
+
+## Final Model Performance
+
+| Metric    |  Score |
+| --------- | -----: |
+| Accuracy  | 0.8155 |
+| Precision | 0.7891 |
+| Recall    | 0.7891 |
+| F1 Score  | 0.7891 |
+| ROC-AUC   | 0.8827 |
+| PR-AUC    | 0.8676 |
+
+Confusion Matrix Summary:
+
+| Metric          | Count |
+| --------------- | ----: |
+| True Positives  |   116 |
+| True Negatives  |   158 |
+| False Positives |    31 |
+| False Negatives |    31 |
+
+---
+
+## Key Churn Drivers
+
+Important churn indicators identified through coefficient analysis and SHAP explanations include:
+
+### Higher Churn Risk
+
+* Higher Recency Days
+* Higher Return Rate
+* Higher Negative Ticket Rate
+* Longer Time Since Last Visit
+
+### Lower Churn Risk
+
+* Higher Monetary Value
+* Higher Purchase Frequency
+* Higher Session Activity
+* Higher Campaign Engagement
+* Platinum Loyalty Membership
+
+---
+
+## Running the Project
+
+### 1. Clone Repository
 
 ```bash
 git clone https://github.com/Deepika825325/part3-churn-prediction-model-card.git
-cd part3-churn-prediction-model-card
+cd D2C-Customer-Churn-Prediction
 ```
 
-Create a virtual environment:
-
-```bash
-python -m venv venv
-```
-
-Activate the environment:
-
-### Windows
-
-```bash
-venv\Scripts\activate
-```
-
-### Linux / macOS
-
-```bash
-source venv/bin/activate
-```
-
-Install dependencies:
+### 2. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
+### 3. Run Notebook
 
-# Running the Notebook
-
-Launch Jupyter Notebook:
-
-```bash
-jupyter notebook
-```
-
-Open:
+Open and execute:
 
 ```text
 churn_model.ipynb
 ```
 
-Run all cells sequentially.
+---
+
+## Saved Artifacts
+
+| File              | Purpose                              |
+| ----------------- | ------------------------------------ |
+| model.pkl         | Trained Logistic Regression Pipeline |
+| metrics.json      | Final Evaluation Metrics             |
+| error_analysis.md | Error Analysis Report                |
+| model_card.md     | Model Documentation                  |
+| outputs/*.png     | Generated Visualizations             |
 
 ---
 
-# Loading the Saved Model
+## Business Recommendations
 
-```python
-import joblib
-
-model = joblib.load("model.pkl")
-```
-
-Generate predictions:
-
-```python
-predictions = model.predict(X)
-```
-
-Generate churn probabilities:
-
-```python
-probabilities = model.predict_proba(X)[:, 1]
-```
+* Prioritize customers with increasing inactivity.
+* Monitor customers with negative support interactions.
+* Use churn scores within CRM workflows.
+* Trigger targeted retention campaigns for high-risk customers.
+* Retrain the model periodically as customer behavior evolves.
 
 ---
 
-# Outputs
+## Conclusion
 
-The project generates:
+A churn prediction system was successfully developed using customer demographics, purchasing behavior, support interactions, engagement activity, and campaign response signals.
 
-* Model performance metrics
-* ROC Curve
-* Precision-Recall Curve
-* Confusion Matrix
-* Feature Importance Analysis
-* Error Analysis Examples
-* Trained Model Artifact
+Among the evaluated models, Logistic Regression achieved the strongest overall performance with a ROC-AUC of 0.8827 and an F1 Score of 0.7891.
 
----
-
-# Troubleshooting
-
-## Missing Package Errors
-
-Example:
-
-```text
-ModuleNotFoundError: No module named 'xgboost'
-```
-
-Solution:
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Model Loading Error
-
-Example:
-
-```text
-FileNotFoundError: model.pkl
-```
-
-Solution:
-
-* Ensure `model.pkl` exists in the repository root.
-* Run the notebook completely before loading the model.
-
----
-
-## Notebook Execution Issues
-
-If variables appear undefined or outputs are missing:
-
-* Restart the notebook kernel.
-* Run all notebook cells sequentially from top to bottom.
-
----
-
-# Key Business Insights
-
-### Strongest Churn Indicators
-
-* High recency
-* Long gaps since website visits
-* Higher return rates
-* Lower loyalty engagement
-
-### Strongest Retention Indicators
-
-* Higher purchase frequency
-* Higher spending behavior
-* Increased website engagement
-* Active loyalty program participation
-
-These insights can help retention teams design more targeted and cost-effective customer engagement strategies.
-
----
-
-# Author
-
-**Deepika Kumari**
-
-Academic Project Submission
-
-**Part 3: Churn Prediction Model & Model Card**
-
-D2C Customer Churn Intelligence Project
+The resulting model provides an interpretable and business-friendly solution for identifying customers at risk of churn and supporting proactive retention strategies.

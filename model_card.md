@@ -1,257 +1,171 @@
-# Model Card: Customer Churn Prediction Model
+# Model Card: D2C Customer Churn Prediction Model
 
 ## Model Overview
 
-**Model Name:** Customer Churn Prediction Model
+This model predicts whether a customer is likely to churn within the next 60 days.
 
-**Version:** 1.0
-
-**Model Type:** Binary Classification
-
-**Algorithm:** Logistic Regression
-
-**Target Variable:** `churn_next_60d`
-
-**Prediction Objective:** Predict whether a customer is likely to churn within the next 60 days.
-
-**Development Date:** June 2026
+The objective is to help the business proactively identify at-risk customers and support targeted retention campaigns instead of applying retention incentives to all customers.
 
 ---
 
-# Business Context
+# Model Details
 
-Customer retention is a critical business objective for direct-to-consumer (D2C) brands because acquiring new customers is generally more expensive than retaining existing ones.
-
-This model was developed to identify customers at elevated risk of churn before churn occurs. The predictions can be used by marketing, CRM, customer success, and retention teams to prioritize interventions such as:
-
-* Personalized retention campaigns
-* Loyalty program offers
-* Re-engagement emails
-* Customer support outreach
-* Targeted promotional incentives
-
-The model is designed to support decision-making and should not be treated as a fully automated customer management system.
+| Attribute               | Value                 |
+| ----------------------- | --------------------- |
+| Model Type              | Logistic Regression   |
+| Problem Type            | Binary Classification |
+| Target Variable         | churn_next_60d        |
+| Prediction Window       | Next 60 Days          |
+| Final Threshold         | 0.45                  |
+| Training Framework      | Scikit-Learn          |
+| Feature Count           | 25 Input Features     |
+| Validation Dataset Size | 336 Customers         |
 
 ---
 
 # Intended Use
 
-## Appropriate Uses
-
 The model is intended to:
 
-* Identify customers likely to churn within the next 60 days.
-* Prioritize customers for retention campaigns.
-* Support customer lifecycle management initiatives.
-* Provide churn-risk insights to business stakeholders.
-* Improve allocation of retention budgets.
+* Identify customers at risk of churning.
+* Support targeted retention campaigns.
+* Prioritize outreach efforts for customer success teams.
+* Assist CRM systems in generating churn-risk scores.
 
-## Intended Users
-
-* Marketing Teams
-* CRM Teams
-* Retention Teams
-* Customer Success Teams
-* Business Analysts
-* Product Managers
+The model should be used as a decision-support tool rather than a fully automated decision-making system.
 
 ---
 
 # Data Used
 
-The model was trained using a customer-level modeling dataset containing information available at a defined customer snapshot date.
+The model was trained using customer-level historical data available on or before the snapshot date.
 
-### Data Sources
+Feature categories include:
 
-* Customer Profile Data
-* Transaction History
-* Purchase Behavior Metrics
-* Support Interaction Records
-* Digital Engagement Data
-* Marketing Interaction Data
+### Customer Profile
 
-### Required Model Inputs
+* City Tier
+* Age Group
+* Acquisition Channel
+* Loyalty Tier
+* Preferred Category
+* Marketing Consent
 
-The model expects customer-level features generated at the snapshot date, including:
+### Purchase Behavior
 
-* Customer profile attributes
-* Transactional metrics
-* Purchase behavior indicators
-* Customer support interactions
-* Marketing engagement signals
-* Website engagement metrics
+* Recency
+* Frequency
+* Monetary Value
+* Discount Usage
+* Category Diversity
 
-All inputs must be generated using information available on or before the snapshot date to prevent target leakage.
+### Support Signals
 
-### Example Features
+* Ticket Count
+* Negative Ticket Rate
+* Resolution Time
 
-#### Customer Profile
+### Web & App Engagement
 
-* city_tier
-* age_group
-* acquisition_channel
-* loyalty_tier
-* preferred_category
-* skin_type
-* marketing_consent
+* Sessions
+* Product Views
+* Cart Activity
+* Wishlist Activity
+* Last Visit Information
 
-#### Transactional Features
+### Campaign Engagement
 
-* recency
-* frequency
-* monetary
-
-#### Purchase Behavior
-
-* return_rate
-* avg_discount
-* category_diversity
-
-#### Support Experience
-
-* ticket_count
-* avg_sentiment
-* avg_resolution_hours
-
-#### Customer Engagement
-
-* sessions_30d
-* campaign_clicks_30d
-* email_opens_30d
-* last_visit_days_ago
-
-### Target Variable
-
-`churn_next_60d`
-
-* 1 = Customer churned within the next 60 days.
-* 0 = Customer remained active.
-
-### Target Distribution
-
-The modeling dataset exhibits a relatively balanced target distribution.
-
-| Class        | Percentage |
-| ------------ | ---------- |
-| Retained (0) | 53.04%     |
-| Churned (1)  | 46.96%     |
-
-Because the classes are reasonably balanced, model evaluation focused on Precision, Recall, F1-Score, and ROC-AUC rather than Accuracy alone.
+* Email Opens
+* Campaign Clicks
 
 ---
 
 # Leakage Prevention
 
-Preventing target leakage was a primary modeling requirement.
+Several precautions were taken to prevent target leakage:
 
-The following controls were implemented:
-
-* Only information available on or before the snapshot date was used.
-* Customer identifiers were excluded from modeling.
-* Snapshot date fields were excluded from modeling.
-* Future transactions were not used as features.
-* Future support interactions were not used as features.
-* Future retention outcomes were not used as predictors.
-
-The modeling workflow was designed to ensure realistic deployment performance.
+* Customer ID was excluded from modeling.
+* Snapshot Date was excluded from modeling.
+* Split information was excluded from modeling.
+* Churn labels were used only as the target variable.
+* All features were generated using information available before the snapshot date.
+* Preprocessing was fitted only on the training dataset.
 
 ---
 
-# Data Splitting Strategy
+# Model Development Process
 
-The provided dataset split was used.
+The following models were evaluated:
 
-| Dataset    | Records |
-| ---------- | ------- |
-| Train      | 1,728   |
-| Validation | 336     |
-| Test       | 336     |
+1. Logistic Regression
+2. Random Forest
+3. Gradient Boosting
+4. XGBoost
 
-The validation set was used for:
+Hyperparameter tuning was performed using GridSearchCV with 5-fold cross-validation.
 
-* Model comparison
-* Threshold optimization
-
-The final model was retrained using Train + Validation data and evaluated on the unseen Test dataset.
+The final model was selected based on validation performance and business relevance.
 
 ---
 
-# Models Evaluated
+# Performance Metrics
 
-The following candidate models were evaluated:
+Validation Performance:
 
-| Model               | Accuracy | Precision | Recall | F1 Score | ROC-AUC |
-| ------------------- | -------- | --------- | ------ | -------- | ------- |
-| Logistic Regression | 0.8036   | 0.7914    | 0.7483 | 0.7692   | 0.8753  |
-| Decision Tree       | 0.7619   | 0.7081    | 0.7755 | 0.7403   | 0.8372  |
-| Random Forest       | 0.7857   | 0.7863    | 0.7007 | 0.7410   | 0.8677  |
-| XGBoost             | 0.7649   | 0.7267    | 0.7415 | 0.7340   | 0.8496  |
-| Gradient Boosting   | 0.7976   | 0.7842    | 0.7415 | 0.7622   | 0.8643  |
-| LightGBM            | 0.7827   | 0.7434    | 0.7687 | 0.7559   | 0.8497  |
+| Metric    |  Score |
+| --------- | -----: |
+| Accuracy  | 0.8155 |
+| Precision | 0.7891 |
+| Recall    | 0.7891 |
+| F1 Score  | 0.7891 |
+| ROC-AUC   | 0.8827 |
+| PR-AUC    | 0.8676 |
 
-Although several ensemble-based algorithms were evaluated, Logistic Regression achieved the highest validation ROC-AUC while maintaining strong interpretability.
+Confusion Matrix:
 
-The model also demonstrated excellent generalization performance, with validation ROC-AUC (0.8753) and test ROC-AUC (0.8711) remaining highly consistent.
-
-This suggests that churn behavior within the available feature space is largely explained by stable linear relationships rather than highly complex non-linear interactions, making Logistic Regression both an effective and business-friendly choice for deployment.
-
----
-
-# Final Model Performance
-
-### Selected Threshold
-
-**0.35**
-
-The threshold was selected using validation-set threshold analysis.
-
-A threshold of 0.35 achieved the highest F1-Score while substantially improving Recall compared to the default threshold of 0.50.
-
-Because the primary business objective is churn prevention, Recall was prioritized to minimize missed retention opportunities.
-
-### Test Set Performance
-
-| Metric    | Value  |
-| --------- | ------ |
-| Accuracy  | 0.7946 |
-| Precision | 0.7565 |
-| Recall    | 0.8690 |
-| F1 Score  | 0.8089 |
-| ROC-AUC   | 0.8711 |
-
-### Test Confusion Matrix
-
-|              | Predicted Stay | Predicted Churn |
-| ------------ | -------------- | --------------- |
-| Actual Stay  | 121            | 47              |
-| Actual Churn | 22             | 146             |
-
-The model successfully identified the majority of future churners while maintaining acceptable precision.
+| Metric          | Count |
+| --------------- | ----: |
+| True Positives  |   116 |
+| True Negatives  |   158 |
+| False Positives |    31 |
+| False Negatives |    31 |
 
 ---
 
-# Key Drivers of Churn
+# Threshold Selection
 
-The most influential churn predictors included:
+The default threshold of 0.50 was evaluated alongside multiple alternative thresholds.
 
-### Higher Churn Risk
+A threshold of 0.45 was selected because it produced the highest F1 Score while maintaining a balanced trade-off between Precision and Recall.
 
-* High Recency
-* Longer Time Since Last Visit
+Business rationale:
+
+* Missing a churner may result in lost revenue.
+* Contacting a small number of non-churning customers is generally less costly.
+* A balanced threshold improves retention effectiveness while controlling campaign costs.
+
+---
+
+# Important Features
+
+Key drivers identified through coefficient analysis and SHAP explanations include:
+
+### Increased Churn Risk
+
+* Higher Recency Days
 * Higher Return Rate
-* Baby Care Category Preference
-* Skin Care Category Preference
-* Silver Loyalty Tier
+* Higher Negative Ticket Rate
+* Longer Time Since Last Visit
 
-### Lower Churn Risk
+### Reduced Churn Risk
 
-* Higher Purchase Frequency
 * Higher Monetary Value
-* More Sessions in the Last 30 Days
-* Marketing Campaign Engagement
-* Platinum Loyalty Tier
+* Higher Purchase Frequency
+* More Sessions
+* More Campaign Clicks
+* Platinum Loyalty Membership
 
-These insights can inform future retention strategies.
+These findings align with expected customer behavior patterns.
 
 ---
 
@@ -259,83 +173,58 @@ These insights can inform future retention strategies.
 
 The model has several limitations:
 
-1. Predictions are based on historical customer behavior and may not fully capture future market changes.
-2. Customer motivations for churn may not always be observable through transactional and engagement data.
-3. External factors such as competitor activity, pricing changes, or economic conditions are not represented.
-4. Model performance may degrade over time as customer behavior evolves.
-5. The model provides risk estimates and should not be interpreted as certainty.
+* Customer behavior may change over time.
+* External market factors are not included.
+* Promotional activities outside the dataset are not captured.
+* Unexpected churn events remain difficult to predict.
+* The model should not be interpreted as a guarantee that a customer will churn.
 
 ---
 
 # Ethical Considerations
 
-### Potential Risks
+The model should be used responsibly.
+
+Potential risks include:
 
 * Over-targeting customers with retention campaigns.
-* Unintended bias from historical behavioral patterns.
-* Misallocation of retention incentives.
+* Incorrect churn predictions leading to unnecessary interventions.
+* Bias arising from historical customer behavior patterns.
 
-### Mitigation Measures
-
-* Human review of campaign strategies.
-* Regular fairness assessments.
-* Continuous performance monitoring.
-* Periodic retraining using updated data.
-
-The model should support business decisions rather than replace human judgment.
+The model should support human decision-making rather than replace it.
 
 ---
 
-# Monitoring Requirements
+# Monitoring Recommendations
 
-The following metrics should be monitored after deployment.
+The model should be monitored regularly for:
 
-### Data Quality Monitoring
+* Accuracy degradation
+* Precision and Recall changes
+* Feature drift
+* Customer behavior shifts
+* Campaign effectiveness
 
-* Missing values
-* Feature distribution changes
-* Category drift
+Recommended retraining frequency:
 
-### Model Performance Monitoring
-
-* Accuracy
-* Precision
-* Recall
-* F1 Score
-* ROC-AUC
-
-### Recommended Retraining Strategy
-
-The model should be retrained:
-
-* Quarterly as part of routine model maintenance.
-* Earlier if ROC-AUC decreases by more than 5%.
-* When significant feature distribution drift is detected.
-* After major business or customer-behavior changes.
-
-Regular retraining helps maintain prediction quality as customer behavior evolves over time.
+* Every 3 to 6 months
+* Earlier if significant performance degradation is observed
 
 ---
 
-# When the Model Should Not Be Used
+# When Not To Use This Model
 
 The model should not be used:
 
-* As the sole basis for customer-facing decisions.
-* For determining customer eligibility for services.
-* For pricing decisions.
-* For customer creditworthiness assessments.
-* On customer populations substantially different from the training dataset.
-* Without periodic monitoring and retraining.
+* As the sole basis for customer decisions.
+* For legal, financial, or compliance decisions.
+* For evaluating customer value without additional business context.
+* When customer behavior has changed significantly since training.
 
 ---
 
 # Conclusion
 
-The Customer Churn Prediction Model provides a practical and interpretable approach for identifying customers at risk of churn within the next 60 days.
+The final Logistic Regression model achieved strong predictive performance with a ROC-AUC of 0.8827 and an F1 Score of 0.7891.
 
-The final Logistic Regression model achieved strong predictive performance on unseen test data, particularly in terms of churn detection capability.
-
-With a Recall of 86.90% and ROC-AUC of 87.11%, the model successfully identifies the majority of future churners while maintaining a practical balance between precision and recall.
-
-The model can support proactive retention initiatives and help improve customer lifetime value when used alongside appropriate business processes, human oversight, and ongoing performance monitoring.
+The model provides a practical and interpretable approach for identifying customers at risk of churn and can support targeted retention strategies through CRM and marketing systems.
