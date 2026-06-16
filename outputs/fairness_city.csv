@@ -1,0 +1,4 @@
+city_tier,customers,actual_churn_rate,predicted_churn_rate
+Tier 1,143,0.51,0.524
+Tier 2,120,0.492,0.558
+Tier 3,73,0.493,0.479

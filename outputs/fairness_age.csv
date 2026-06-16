@@ -1,0 +1,5 @@
+age_group,customers,actual_churn_rate,predicted_churn_rate
+18-24,87,0.448,0.563
+25-34,146,0.514,0.514
+35-44,69,0.522,0.551
+45+,34,0.529,0.441
